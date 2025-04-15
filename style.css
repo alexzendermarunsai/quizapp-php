@@ -1,0 +1,230 @@
+/* --- style.css --- */
+body {
+    font-family: sans-serif;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.question-container {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    position: relative;
+}
+
+.question-text {
+    font-weight: bold;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.options label {
+    display: block;
+    margin-bottom: 10px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 3px;
+    transition: background-color 0.2s ease-in-out; /* Smooth transition for highlights */
+}
+
+.options label.disabled {
+    cursor: default;
+    color: #666;
+}
+
+.options input[type="radio"] {
+    margin-right: 8px;
+    vertical-align: middle; /* Align radio button better with text */
+}
+
+/* Highlighting for answered questions */
+.options label.selected-correct {
+    background-color: #d4edda !important; /* Use important to override potential hover effects */
+    border-left: 4px solid #155724;
+}
+
+.options label.selected-incorrect {
+    background-color: #f8d7da !important;
+    border-left: 4px solid #721c24;
+}
+
+.options label.correct-answer-highlight {
+    border: 2px solid #28a745; /* Use a clear border for the correct answer */
+    font-weight: bold;
+    background-color: #e9f5ec; /* Light green background for correct */
+}
+
+/* Ensure highlights don't overlap badly */
+.options label.selected-incorrect.correct-answer-highlight {
+    background-color: #f8d7da; /* Keep incorrect background if selected */
+    border: 2px solid #28a745; /* But still show the correct border */
+    border-left: 4px solid #721c24; /* And the incorrect selection indicator */
+}
+
+
+.feedback {
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 5px;
+    border: 1px solid;
+}
+
+.feedback.correct {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.feedback.incorrect {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.feedback p {
+    margin: 5px 0;
+}
+
+.score-info {
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-align: right;
+    color: #555;
+}
+
+.progress-info {
+    font-weight: bold;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+    text-align: center;
+}
+
+button,
+.nav-button {
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none; /* For link buttons */
+    display: inline-block; /* For link buttons */
+    text-align: center;
+    transition: background-color 0.2s ease-in-out;
+}
+
+button:hover:not(:disabled),
+.nav-button:hover:not(.disabled) {
+    background-color: #0056b3;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    color: #777;
+}
+
+.nav-button.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    pointer-events: none; /* Prevent click */
+    color: #888;
+}
+
+.navigation {
+    display: flex;
+    justify-content: space-between; /* Puts buttons at ends */
+    margin-top: 20px;
+    margin-bottom: 20px;
+    align-items: center; /* Align items vertically */
+}
+
+.results-container {
+    text-align: center;
+    padding: 20px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+}
+
+.results-container h2 {
+    margin-bottom: 15px;
+}
+
+a.reset-link {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 8px 15px;
+    background-color: #6c757d;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.2s ease-in-out;
+}
+a.reset-link.reset-now {
+     background-color: #dc3545; /* Make Reset Now red */
+}
+
+a.reset-link:hover {
+    background-color: #5a6268;
+}
+a.reset-link.reset-now:hover {
+     background-color: #c82333;
+}
+
+
+pre {
+    background-color: #f0f0f0; /* Slightly darker background */
+    padding: 15px; /* More padding */
+    margin-top: 10px; /* Space above pre */
+    border-radius: 4px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: monospace;
+    max-height: 250px; /* Slightly taller */
+    overflow-y: auto;
+    border: 1px solid #ddd; /* Subtle border */
+    line-height: 1.5; /* Better spacing for code */
+}
+
+/* Add to style.css */
+.question-container.simulation-question {
+    background-color: #eef; /* Light blue background for simulations */
+    border-left: 5px solid #6c757d; /* Grey left border */
+}
+
+.simulation-details {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.simulation-details pre {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border: 1px dashed #ccc;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Style for the question reference number */
+.question-reference {
+    font-size: 0.85em; /* Make it slightly smaller */
+    color: #777;       /* Grey color */
+    margin-top: -5px;  /* Adjust negative margin to bring it closer to question */
+    margin-bottom: 10px; /* Space before the options/details */
+    text-align: right; /* Align to the right, or 'left'/'center' */
+}
+
+/* Center the submit button container */
+.submit-button-container {
+    text-align: center;
+    margin-top: 20px; /* Add some space above the button */
+    margin-bottom: 10px; /* Optional: space below button */
+}
