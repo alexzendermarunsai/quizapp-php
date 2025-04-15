@@ -228,3 +228,87 @@ pre {
     margin-top: 20px; /* Add some space above the button */
     margin-bottom: 10px; /* Optional: space below button */
 }
+/* Remove or comment out these styles */
+/*
+.qr-trigger-button {
+    background-color: #6c757d;
+    color: white;
+    padding: 5px 10px;
+    font-size: 0.9em;
+    text-decoration: none;
+    border-radius: 4px;
+    display: inline-block;
+    cursor: pointer;
+}
+.qr-trigger-button:hover {
+    background-color: #5a6268;
+}
+*/
+
+/* Add styles for the new QR link */
+.qr-link {
+    margin-left: 10px; /* Space between year and link */
+    font-size: 0.9em; /* Slightly smaller */
+    color: #007bff;   /* Standard link blue color */
+    text-decoration: none; /* Remove underline by default */
+    cursor: pointer;
+}
+
+.qr-link:hover {
+    text-decoration: underline; /* Add underline on hover */
+    color: #0056b3;
+}
+
+
+/* Styles for the popup itself remain the same */
+#qr-popup {
+    display: none; /* Initially hidden */
+    position: fixed; /* Position relative to the viewport */
+    bottom: 20px;    /* Distance from bottom */
+    right: 20px;     /* Distance from right */
+    width: 250px;    /* Set a width */
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Add shadow for pop-out effect */
+    padding: 20px;
+    z-index: 1000; /* Ensure it's above other content */
+    text-align: center;
+}
+
+#qr-popup h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    color: #333;
+}
+
+#qr-popup p {
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+#qr-popup img#qr-code-img {
+    display: block; /* Make image a block element */
+    margin: 15px auto; /* Center image with margin */
+    max-width: 100%;
+    height: auto; /* Maintain aspect ratio */
+    border: 1px solid #eee; /* Optional: subtle border */
+}
+
+.popup-close {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.8em; /* Make 'X' larger */
+    line-height: 1; /* Adjust line height for better positioning */
+    color: #aaa;
+    cursor: pointer;
+    padding: 0;
+}
+.popup-close:hover {
+    color: #333;
+}

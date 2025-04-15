@@ -461,8 +461,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['question_index']) && 
     <?php endif; // End of quiz display (question/simulation vs results) ?>
 
     <footer class="site-footer">
-        <p>CompTIA Pentester+ PT0-003 Quiz App - <?php echo date('Y'); ?></p>
+
+        <?php // --- Popup Element (Initially Hidden) --- ?>
+        <div id="qr-popup" class="popup">
+            <button class="popup-close" title="Close">×</button> <?php // Simple close button ?>
+            <h2>Thank You!</h2>
+            <p>If you found this helpful, consider showing your appreciation or buy me a cup of coffee ☕:</p>
+            <img id="qr-code-img" src="qr.jpeg" alt="Appreciation QR Code" width="150" height="150">
+            <?php // !!! IMPORTANT: Replace "path/to/your/qr-code.png" with the actual path to your QR code image file !!! ?>
+            <p style="font-size: 0.8em;">(Scan the code)</p>
+        </div>
+
+        <footer class="site-footer">
+        <?php // --- Footer Text with integrated QR Link --- ?>
+        <center>
+        <p>
+            CompTIA Pentester+ PT0-003 Quiz App - <?php echo date('Y'); ?><br>
+            <a href="#" id="show-qr-popup-link" class="qr-link" title="Show Appreciation QR Code">(Like the App ?😍)</a>
+        </p>
+        </center>
+
     </footer>
+
+    <?php // --- JavaScript for Popup --- ?>
+    <script>
+        // Get references to the elements
+        const showPopupLink = document.getElementById('show-qr-popup-link'); // Use the new ID
+        const qrPopup = document.getElementById('qr-popup');
+        const closePopupButton = qrPopup.querySelector('.popup-close'); // Find close button inside popup
+
+        // Event listener for the trigger link
+        if (showPopupLink) { // Check if the link exists before adding listener
+            showPopupLink.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent default link behavior (jumping to #)
+                qrPopup.style.display = 'block'; // Show the popup
+            });
+        }
+
+        // Event listener for the close button
+        if (closePopupButton) { // Check if the close button exists
+            closePopupButton.addEventListener('click', function() {
+                qrPopup.style.display = 'none'; // Hide the popup
+            });
+        }
+
+
+        // Optional: Close popup if user clicks outside of it
+        window.addEventListener('click', function(event) {
+            // Check if the click is outside the popup and not on the trigger link itself
+            if (showPopupLink && event.target !== qrPopup && !qrPopup.contains(event.target) && event.target !== showPopupLink) {
+                 if (qrPopup.style.display === 'block') { // Only hide if it's currently visible
+                     qrPopup.style.display = 'none';
+                 }
+            }
+        });
+    </script>
 
 </body>
 </html>
