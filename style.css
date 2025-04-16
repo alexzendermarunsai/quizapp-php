@@ -228,87 +228,185 @@ pre {
     margin-top: 20px; /* Add some space above the button */
     margin-bottom: 10px; /* Optional: space below button */
 }
-/* Remove or comment out these styles */
-/*
-.qr-trigger-button {
-    background-color: #6c757d;
-    color: white;
-    padding: 5px 10px;
-    font-size: 0.9em;
-    text-decoration: none;
-    border-radius: 4px;
-    display: inline-block;
-    cursor: pointer;
-}
-.qr-trigger-button:hover {
-    background-color: #5a6268;
-}
-*/
 
-/* Add styles for the new QR link */
-.qr-link {
-    margin-left: 10px; /* Space between year and link */
-    font-size: 0.9em; /* Slightly smaller */
-    color: #007bff;   /* Standard link blue color */
-    text-decoration: none; /* Remove underline by default */
-    cursor: pointer;
+/* --- Default Theme (Current Style) --- */
+body.default-theme {
+    font-family: sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
 }
 
-.qr-link:hover {
-    text-decoration: underline; /* Add underline on hover */
-    color: #0056b3;
-}
-
-
-/* Styles for the popup itself remain the same */
-#qr-popup {
-    display: none; /* Initially hidden */
-    position: fixed; /* Position relative to the viewport */
-    bottom: 20px;    /* Distance from bottom */
-    right: 20px;     /* Distance from right */
-    width: 250px;    /* Set a width */
+/* --- Modern Minimalist Theme --- */
+body.minimalist-theme {
+    font-family: 'Arial', sans-serif;
     background-color: #ffffff;
+    color: #000;
+    line-height: 1.8;
+}
+
+.minimalist-theme .question-container {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+}
+
+.minimalist-theme .options label {
+    background-color: #e0e0e0;
     border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Add shadow for pop-out effect */
-    padding: 20px;
-    z-index: 1000; /* Ensure it's above other content */
-    text-align: center;
+    color: #000;
 }
 
-#qr-popup h2 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 1.2em;
-    color: #333;
+.minimalist-theme .options label:hover {
+    background-color: #d0d0d0;
 }
 
-#qr-popup p {
-    margin-bottom: 10px;
-    font-size: 0.9em;
-    color: #555;
+/* --- Hacker Theme --- */
+body.hacker-theme {
+    font-family: 'Courier New', monospace;
+    background-color: #000;
+    color: #0f0;
 }
 
-#qr-popup img#qr-code-img {
-    display: block; /* Make image a block element */
-    margin: 15px auto; /* Center image with margin */
-    max-width: 100%;
-    height: auto; /* Maintain aspect ratio */
-    border: 1px solid #eee; /* Optional: subtle border */
+.hacker-theme .question-container {
+    background-color: #111;
+    border: 1px solid #0f0;
 }
 
-.popup-close {
-    position: absolute;
-    top: 5px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 1.8em; /* Make 'X' larger */
-    line-height: 1; /* Adjust line height for better positioning */
-    color: #aaa;
-    cursor: pointer;
-    padding: 0;
+.hacker-theme .options label {
+    background-color: #222;
+    border: 1px solid #0f0;
+    color: #0f0;
 }
-.popup-close:hover {
-    color: #333;
+
+.hacker-theme .options label:hover {
+    background-color: #333;
+}
+
+/* Adjusted Hacker Theme Explanation Background for Readability */
+.hacker-theme pre.explanation {
+    background-color: #111; /* Match the dark theme background */
+    color: #0f0; /* Bright green text */
+    border: 1px solid #0f0; /* Green border for consistency */
+}
+
+/* --- Button Styles for Themes --- */
+
+/* Default Theme */
+.default-theme button,
+.default-theme .nav-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.default-theme button:hover:not(:disabled),
+.default-theme .nav-button:hover:not(.disabled) {
+    background-color: #0056b3;
+}
+
+/* Modern Minimalist Theme */
+.minimalist-theme button,
+.minimalist-theme .nav-button {
+    background-color: #333;
+    color: white;
+    border: 1px solid #ccc;
+}
+
+.minimalist-theme button:hover:not(:disabled),
+.minimalist-theme .nav-button:hover:not(.disabled) {
+    background-color: #555;
+}
+
+/* Hacker Theme */
+.hacker-theme button,
+.hacker-theme .nav-button {
+    background-color: #0f0;
+    color: #000;
+    border: 1px solid #0f0;
+}
+
+.hacker-theme button:hover:not(:disabled),
+.hacker-theme .nav-button:hover:not(.disabled) {
+    background-color: #0a0;
+    color: #fff;
+}
+
+/* --- Feedback Styles for Themes --- */
+
+/* Default Theme */
+.default-theme .feedback.correct {
+    background-color: #e6f4ea; /* Softer green */
+    border-color: #a3d9b1;
+    color: #1b5e20; /* Darker green for better contrast */
+}
+
+.default-theme .feedback.incorrect {
+    background-color: #fce4e4; /* Softer red */
+    border-color: #f5a9a9;
+    color: #b71c1c; /* Darker red for better contrast */
+}
+
+/* Modern Minimalist Theme */
+.minimalist-theme .feedback.correct {
+    background-color: #e8f5e9; /* Softer green */
+    border-color: #c8e6c9;
+    color: #2e7d32; /* Darker green for better contrast */
+}
+
+.minimalist-theme .feedback.incorrect {
+    background-color: #ffebee; /* Softer red */
+    border-color: #ffcdd2;
+    color: #c62828; /* Darker red for better contrast */
+}
+
+/* Hacker Theme */
+.hacker-theme .feedback.correct {
+    background-color: #004d00; /* Slightly lighter green */
+    border-color: #00cc00;
+    color: #00cc00; /* Bright green */
+}
+
+.hacker-theme .feedback.incorrect {
+    background-color: #4d0000; /* Slightly lighter red */
+    border-color: #ff3333;
+    color: #ff3333; /* Bright red */
+}
+
+/* Adjusted selected-correct and selected-incorrect styles for themes */
+
+/* Default Theme */
+.default-theme .options label.selected-correct {
+    background-color: #e6f4ea; /* Softer green */
+    border-left: 4px solid #1b5e20; /* Darker green */
+    color: #1b5e20;
+}
+
+.default-theme .options label.selected-incorrect {
+    background-color: #fce4e4; /* Softer red */
+    border-left: 4px solid #b71c1c; /* Darker red */
+    color: #b71c1c;
+}
+
+/* Modern Minimalist Theme */
+.minimalist-theme .options label.selected-correct {
+    background-color: #e8f5e9; /* Softer green */
+    border-left: 4px solid #2e7d32; /* Darker green */
+    color: #2e7d32;
+}
+
+.minimalist-theme .options label.selected-incorrect {
+    background-color: #ffebee; /* Softer red */
+    border-left: 4px solid #c62828; /* Darker red */
+    color: #c62828;
+}
+
+/* Hacker Theme */
+.hacker-theme .options label.selected-correct {
+    background-color: #004d00; /* Slightly lighter green */
+    border-left: 4px solid #00cc00; /* Bright green */
+    color: #00cc00;
+}
+
+.hacker-theme .options label.selected-incorrect {
+    background-color: #4d0000; /* Slightly lighter red */
+    border-left: 4px solid #ff3333; /* Bright red */
+    color: #ff3333;
 }
