@@ -3,216 +3,156 @@
 session_start();
 
 // --- Configuration ---
-$json_file = 'questions_bank.json'; // Make sure this file exists and is readable
+$json_file = 'questions_bank.json'; // Ensure this file exists and is readable
 
-// --- Functions ---
+// --- Utility Functions ---
 
 /**
- * Loads quiz questions from the JSON file.
- * Returns an array of questions or false on failure.
+ * Loads and validates JSON data from a file.
  * @param string $filename
  * @return array|false
  */
-function load_questions(string $filename) {
-    // Check if the file exists and is readable
+function load_json_file(string $filename) {
     if (!file_exists($filename) || !is_readable($filename)) {
-        error_log("Error: Questions file '{$filename}' not found or not readable."); // Log error
+        error_log("Error: File '{$filename}' not found or not readable.");
         return false;
     }
-    $json_data = file_get_contents($filename);
-    if ($json_data === false) {
-        error_log("Error: Could not read content from file '{$filename}'."); // Log error
+    $data = file_get_contents($filename);
+    if ($data === false) {
+        error_log("Error: Could not read file '{$filename}'.");
         return false;
     }
-    $questions = json_decode($json_data, true); // Use true for associative array
-    // Check for JSON decoding errors
+    $decoded = json_decode($data, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
-        error_log("Error parsing JSON from '{$filename}': " . json_last_error_msg()); // Log error
+        error_log("Error parsing JSON: " . json_last_error_msg());
         return false;
     }
-    // Ensure the result is an array (even if empty)
-    return is_array($questions) ? array_values($questions) : false; // array_values to ensure numeric indexes 0, 1, 2...
+    return is_array($decoded) ? $decoded : false;
 }
 
 /**
- * Resets the quiz state.
+ * Resets the quiz session and redirects to the main page.
  */
 function reset_quiz(): void {
-    // Unset specific session variables related to the quiz
-    unset($_SESSION['current_question_index']);
-    unset($_SESSION['score']);
-    unset($_SESSION['results']);
-
-    // Redirect to clean URL after resetting (remove query parameters)
+    session_unset();
     header("Location: " . strtok($_SERVER["REQUEST_URI"], '?'));
-    exit; // Stop script execution immediately after sending the redirect header
+    exit;
 }
+
+/**
+ * Handles navigation actions (next/prev).
+ * @param int $currentIndex
+ * @param int $totalQuestions
+ */
+function handle_navigation(int &$currentIndex, int $totalQuestions): void {
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action'])) {
+        if ($_GET['action'] === 'next' && $currentIndex < $totalQuestions) {
+            $_SESSION['current_question_index']++;
+        } elseif ($_GET['action'] === 'prev' && $currentIndex > 0) {
+            $_SESSION['current_question_index']--;
+        }
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
+    }
+}
+
+/**
+ * Initializes session variables for the quiz.
+ * @param int $totalQuestions
+ */
+function initialize_session(int $totalQuestions): void {
+    if (!isset($_SESSION['current_question_index'])) {
+        $_SESSION['current_question_index'] = 0;
+    }
+    if (!isset($_SESSION['score'])) {
+        $_SESSION['score'] = 0;
+    }
+    if (!isset($_SESSION['results'])) {
+        $_SESSION['results'] = [];
+    }
+    if ($_SESSION['current_question_index'] >= $totalQuestions) {
+        $_SESSION['current_question_index'] = 0;
+    }
+}
+
+/**
+ * Sets the theme based on user selection.
+ */
+function set_theme(): void {
+    if (isset($_GET['theme'])) {
+        $_SESSION['theme'] = $_GET['theme'];
+    }
+    if (!isset($_SESSION['theme'])) {
+        $_SESSION['theme'] = 'default-theme'; // Default theme
+    }
+}
+
+set_theme();
+$theme_class = htmlspecialchars($_SESSION['theme']);
 
 // --- Main Logic ---
 
-// 1. Load questions FIRST - Critical for determining quiz structure
-$questions = load_questions($json_file);
+$questions = load_json_file($json_file);
 if ($questions === false) {
-    // Display a user-friendly error message and stop execution
-    die("Error: Could not load or parse the questions bank file ('" . htmlspecialchars($json_file) . "'). Please ensure it exists, is readable, and contains valid JSON. Check server logs for more details.");
+    die("Error: Could not load or parse the questions bank file. Please check the server logs.");
 }
-// 2. Define $total_questions IMMEDIATELY after successful load
+
 $total_questions = count($questions);
-// Handle case where the JSON file is valid but empty
 if ($total_questions === 0) {
-     die("Error: The questions bank file ('" . htmlspecialchars($json_file) . "') is empty or contains no valid questions.");
+    die("Error: The questions bank file is empty.");
 }
 
-// 3. Handle Reset Action (includes exit, so do this before depending on session vars that might be reset)
 if (isset($_GET['action']) && $_GET['action'] === 'reset') {
-    reset_quiz(); // This function includes an exit() call
+    reset_quiz();
 }
 
-// 4. Initialize essential session variables if they don't exist (First visit or session expired)
-if (!isset($_SESSION['current_question_index'])) {
-    $_SESSION['current_question_index'] = 0;
-}
-if (!isset($_SESSION['score'])) {
-    $_SESSION['score'] = 0;
-}
-if (!isset($_SESSION['results'])) {
-    $_SESSION['results'] = []; // Stores results for each question index
-}
-
-// 5. Define $current_index based on session AFTER initialization and potential reset
+initialize_session($total_questions);
 $current_index = (int)$_SESSION['current_question_index'];
-if ($current_index < 0 || $current_index > $total_questions) {
-    $_SESSION['current_question_index'] = 0;
-    $current_index = 0;
-}
+handle_navigation($current_index, $total_questions);
 
-// 6. Handle Navigation (Previous/Next) using GET (needs $current_index)
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action'])) {
-    if ($_GET['action'] === 'next' && $current_index < $total_questions) {
-        $_SESSION['current_question_index']++;
-        header("Location: " . $_SERVER['PHP_SELF']);
-        exit;
-    } elseif ($_GET['action'] === 'prev' && $current_index > 0) {
-        $_SESSION['current_question_index']--;
-        header("Location: " . $_SERVER['PHP_SELF']);
-        exit;
+// Ensure feedback is displayed after submitting an answer
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['question_index'])) {
+    $submitted_index = (int)$_POST['question_index'];
+    if (isset($questions[$submitted_index])) {
+        $feedback_for_current_question = $_SESSION['results'][$submitted_index] ?? null;
     }
 }
 
-// 7. Handle submitted answer (POST request)
-$feedback_for_current_question = null;
-// Check if the submission is for a *non-simulation* question
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['question_index']) && isset($questions[(int)$_POST['question_index']])) {
-
+// Handle submitted answers
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['question_index'])) {
     $submitted_index = (int)$_POST['question_index'];
-    $question_data = $questions[$submitted_index];
+    if (isset($questions[$submitted_index])) {
+        $current_question = $questions[$submitted_index];
+        $submitted_answer = $_POST['answer'] ?? null;
 
-    // Proceed only if it's not a simulation and an answer was actually submitted
-    if (isset($_POST['answer']) && !($question_data['is_simulation'] ?? false) && !empty($question_data['options'])) {
-        $submitted_answer_raw = $_POST['answer']; // Could be string or array
+        if ($submitted_answer !== null) {
+            $correct_answer = $current_question['correct_answer'];
+            $is_correct = $submitted_answer == $correct_answer;
 
-        // Check submission is for the *correct* question and hasn't been answered yet
-        if ($submitted_index === $current_index && !isset($_SESSION['results'][$submitted_index])) {
+            // Update session results
+            $_SESSION['results'][$submitted_index] = [
+                'correct' => $is_correct,
+                'your_answer' => $submitted_answer,
+                'correct_answer' => $correct_answer,
+                'explanation' => $current_question['explanation'] ?? 'No explanation provided.'
+            ];
 
-            $correct_answer_str = $question_data['correct_answer'] ?? null; // e.g., "B" or "B C" or null for simulation
-            $explanation = $question_data['explanation'] ?? 'No explanation provided.';
-            $is_correct = false;
-
-            // Check if correct_answer exists before trying to use it
-            if ($correct_answer_str !== null) {
-                // Determine if it's multiple choice based on space in correct answer string (workaround)
-                $is_multiple_choice = is_string($correct_answer_str) && strpos($correct_answer_str, ' ') !== false;
-
-                if ($is_multiple_choice) {
-                    // --- Handle Multiple Choice Answer ---
-                    $correct_answer_array = explode(' ', $correct_answer_str);
-                    sort($correct_answer_array); // Sort for consistent comparison
-
-                    // Ensure submitted answer is an array, clean it up
-                    $submitted_answer_array = is_array($submitted_answer_raw) ? array_values($submitted_answer_raw) : []; // Ensure it's an array
-                    sort($submitted_answer_array); // Sort for comparison
-
-                     // Check if the submitted answer exists in the options (basic validation)
-                    $valid_submission = true;
-                    if (empty($submitted_answer_array)) { // Cannot submit empty for multiple choice
-                        $valid_submission = false;
-                    } else {
-                        foreach ($submitted_answer_array as $ans) {
-                            if (!isset($question_data['options'][$ans])) {
-                                 $valid_submission = false;
-                                 break;
-                            }
-                        }
-                    }
-
-
-                    if ($valid_submission) {
-                        // Compare sorted arrays
-                        $is_correct = ($submitted_answer_array == $correct_answer_array);
-
-                        if ($is_correct) {
-                            $_SESSION['score']++; // Increment score only if ALL correct answers are selected and no incorrect ones
-                        }
-
-                        $_SESSION['results'][$submitted_index] = [
-                            'correct' => $is_correct,
-                            'your_answer' => $submitted_answer_array, // Store as array
-                            'correct_answer' => $correct_answer_array, // Store as array
-                            'explanation' => $explanation,
-                            'question_text' => $question_data['question_text'],
-                            'options' => $question_data['options']
-                        ];
-                         $feedback_for_current_question = $_SESSION['results'][$submitted_index];
-                    } else {
-                         error_log("Invalid or empty multiple choice answer submitted for index {$submitted_index}");
-                         // Optionally set feedback indicating invalid submission
-                         $feedback_for_current_question = ['correct' => false, 'your_answer' => $submitted_answer_array, 'correct_answer' => $correct_answer_array, 'explanation' => 'Invalid selection.', 'question_text' => $question_data['question_text'], 'options' => $question_data['options']];
-                    }
-
-
-                } else {
-                    // --- Handle Single Choice Answer ---
-                    $submitted_answer_str = is_string($submitted_answer_raw) ? $submitted_answer_raw : ''; // Ensure it's a string
-
-                    // Check if the submitted answer exists in the options (basic validation)
-                    if (isset($question_data['options'][$submitted_answer_str])) {
-                        $is_correct = ($submitted_answer_str === $correct_answer_str);
-
-                        if ($is_correct) {
-                            $_SESSION['score']++;
-                        }
-
-                        $_SESSION['results'][$submitted_index] = [
-                            'correct' => $is_correct,
-                            'your_answer' => $submitted_answer_str, // Store as string
-                            'correct_answer' => $correct_answer_str, // Store as string
-                            'explanation' => $explanation,
-                            'question_text' => $question_data['question_text'],
-                            'options' => $question_data['options']
-                        ];
-                         $feedback_for_current_question = $_SESSION['results'][$submitted_index];
-                    } else {
-                         error_log("Invalid single choice answer '{$submitted_answer_str}' submitted for index {$submitted_index}");
-                         // Optionally set feedback indicating invalid submission
-                         $feedback_for_current_question = ['correct' => false, 'your_answer' => $submitted_answer_str, 'correct_answer' => $correct_answer_str, 'explanation' => 'Invalid selection.', 'question_text' => $question_data['question_text'], 'options' => $question_data['options']];
-                    }
-                }
-            } else {
-                // Handle case where correct_answer is null (should only be simulations, but defensive check)
-                error_log("Attempted to process answer for question index {$submitted_index} which has null correct_answer.");
+            // Update score if correct
+            if ($is_correct) {
+                $_SESSION['score']++;
             }
-
-            // Optional PRG redirect
-            // header("Location: " . $_SERVER['PHP_SELF']);
-            // exit;
         }
     }
-    // If already answered, retrieve feedback from session
-    elseif (isset($_SESSION['results'][$submitted_index])) {
-         $feedback_for_current_question = $_SESSION['results'][$submitted_index];
-    }
 }
 
+// Add theme class to selected-correct and selected-incorrect dynamically
+if (isset($feedback_to_display)) {
+    $feedback_class = $feedback_to_display['correct'] ? 'selected-correct' : 'selected-incorrect';
+    $theme_class = htmlspecialchars($_SESSION['theme']);
+    $feedback_class .= ' ' . $theme_class;
+}
+
+// Render the quiz interface (HTML output remains unchanged)
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -222,7 +162,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['question_index']) && 
     <title>CompTIA Pentester+ PT0-003 Quiz APP</title>
     <link rel="stylesheet" href="style.css"> <?php /* Link to your CSS file */ ?>
 </head>
-<body>
+<body class="<?php echo $theme_class; ?>">
+
+    <div class="theme-selector">
+        <a href="?theme=default-theme" class="theme-link">Default Theme</a>
+        <a href="?theme=minimalist-theme" class="theme-link">Minimalist Theme</a>
+        <a href="?theme=hacker-theme" class="theme-link">Hacker Theme</a>
+    </div>
 
     <h1>CompTIA Pentester+ PT0-003 Quiz</h1>
 
@@ -461,61 +407,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['question_index']) && 
     <?php endif; // End of quiz display (question/simulation vs results) ?>
 
     <footer class="site-footer">
-
-        <?php // --- Popup Element (Initially Hidden) --- ?>
-        <div id="qr-popup" class="popup">
-            <button class="popup-close" title="Close">×</button> <?php // Simple close button ?>
-            <h2>Thank You!</h2>
-            <p>If you found this helpful, consider showing your appreciation or buy me a cup of coffee ☕:</p>
-            <img id="qr-code-img" src="qr.jpeg" alt="Appreciation QR Code" width="150" height="150">
-            <?php // !!! IMPORTANT: Replace "path/to/your/qr-code.png" with the actual path to your QR code image file !!! ?>
-            <p style="font-size: 0.8em;">(Scan the code)</p>
-        </div>
-
-        <footer class="site-footer">
-        <?php // --- Footer Text with integrated QR Link --- ?>
-        <center>
-        <p>
-            CompTIA Pentester+ PT0-003 Quiz App - <?php echo date('Y'); ?><br>
-            <a href="#" id="show-qr-popup-link" class="qr-link" title="Show Appreciation QR Code">(Like the App ?😍)</a>
-        </p>
-        </center>
-
+        <p>CompTIA Pentester+ PT0-003 Quiz App - <?php echo date('Y'); ?></p>
     </footer>
-
-    <?php // --- JavaScript for Popup --- ?>
-    <script>
-        // Get references to the elements
-        const showPopupLink = document.getElementById('show-qr-popup-link'); // Use the new ID
-        const qrPopup = document.getElementById('qr-popup');
-        const closePopupButton = qrPopup.querySelector('.popup-close'); // Find close button inside popup
-
-        // Event listener for the trigger link
-        if (showPopupLink) { // Check if the link exists before adding listener
-            showPopupLink.addEventListener('click', function(event) {
-                event.preventDefault(); // Prevent default link behavior (jumping to #)
-                qrPopup.style.display = 'block'; // Show the popup
-            });
-        }
-
-        // Event listener for the close button
-        if (closePopupButton) { // Check if the close button exists
-            closePopupButton.addEventListener('click', function() {
-                qrPopup.style.display = 'none'; // Hide the popup
-            });
-        }
-
-
-        // Optional: Close popup if user clicks outside of it
-        window.addEventListener('click', function(event) {
-            // Check if the click is outside the popup and not on the trigger link itself
-            if (showPopupLink && event.target !== qrPopup && !qrPopup.contains(event.target) && event.target !== showPopupLink) {
-                 if (qrPopup.style.display === 'block') { // Only hide if it's currently visible
-                     qrPopup.style.display = 'none';
-                 }
-            }
-        });
-    </script>
 
 </body>
 </html>
